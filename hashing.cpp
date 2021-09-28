@@ -2,6 +2,8 @@
 #include <string>
 #include <unordered_map>
 
+/*This file is just a simple example of how to create hash functions for user-defined types*/
+
 template <class T>
 struct myPair {
     T x;
