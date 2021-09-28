@@ -13,6 +13,7 @@ struct graph {
         }
 };
 
+
 std::unordered_map<char,char> BFS( graph G,  char source ) {
 
     std::queue<char> frontier;
@@ -66,9 +67,12 @@ graph example_graph {{
   }};
  
 
-find_path(example_graph, 'A', 'F');
+//find_path(example_graph, 'A', 'F');
 
-   
+
+
 SquareGrid grid = make_diagram1();
-draw_grid(grid);
+GridLocation source{5,5};
+GridLocation goal{10,10};
+draw_grid(grid,nullptr, nullptr, nullptr, &source, &goal);
 }
