@@ -21,6 +21,7 @@
 
 struct GridLocation {
   int x, y;
+  int distance; //track distance from source
 };
 
 
@@ -38,10 +39,10 @@ template <> struct hash<GridLocation> { //template specialisation
 
 
 struct SquareGrid {
-  static std::array<GridLocation, 4> DIRS; //??
+  static std::array<GridLocation, 4> DIRS; //Static member variables are shared between all instances of the class
 
   int width, height;
-  std::unordered_set<GridLocation> walls;
+  std::unordered_set<GridLocation> walls; //stores coordinates of the obstacles
 
   SquareGrid(int width_, int height_)
      : width(width_), height(height_) {}
@@ -51,15 +52,17 @@ struct SquareGrid {
         && 0 <= id.y && id.y < height;
   }
 
-  bool passable(GridLocation id) const { //checks if a point is passable by looking at the set of walls
+  //checks if a point is passable by looking at the set of walls
+  bool passable(GridLocation id) const { 
     return walls.find(id) == walls.end();
   }
 
-  std::vector<GridLocation> neighbors(GridLocation id) const { //function that returns the neighbouring points of a given point
+  //function that returns the neighbouring points of a given point
+  std::vector<GridLocation> neighbors(GridLocation id) const { 
 
     std::vector<GridLocation> results;
 
-    for (GridLocation dir : DIRS) { //find the next point in each direction
+    for (GridLocation dir : DIRS) { //find adjacent coordinates
       GridLocation next{id.x + dir.x, id.y + dir.y};
       if (in_bounds(next) && passable(next)) {
         results.push_back(next);
@@ -73,9 +76,10 @@ struct SquareGrid {
 
     return results;
   }
+
 };
 
-std::array<GridLocation, 4> SquareGrid::DIRS = { //access via the class since this is a static member variable
+std::array<GridLocation, 4> SquareGrid::DIRS = { //static member variables must be defined in global scope, and should be done using scope operator (::)
   /* East, West, North, South */
   GridLocation{1, 0}, GridLocation{-1, 0},
   GridLocation{0, -1}, GridLocation{0, 1}

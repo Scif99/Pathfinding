@@ -5,49 +5,56 @@
 #include "implementation.cpp"
 
 
-struct graph {
-    std::unordered_map<char, std::vector<char>> edges;
 
-    std::vector<char> neighbours(char v) {
-        return edges[v];
-        }
-};
+/*  BFS for the char representation of nodes
+- Returns a map containing parent locations, so that we can print out paths.
+- This implementation also includes an optional stopping distance argument.
+*/
 
+template<typename Location, typename Graph>
+std::unordered_map<Location,Location> BFS( Graph G,  Location source, Location goal, int stopping_distance = -1 ) {  
 
-std::unordered_map<char,char> BFS( graph G,  char source ) {
-
-    std::queue<char> frontier;
+    std::queue<Location> frontier;
     frontier.push(source);
 
-    std::unordered_set<char> reached;
+    std::unordered_set<Location> reached;
     reached.insert(source);
 
-    std::unordered_map<char,char> came_from;
+    std::unordered_map<Location,Location> came_from;
     //dont add source...
 
+    source.distance = 0;
 
     while(!frontier.empty()) {
-        char v = frontier.front();
+        Location v = frontier.front();
         frontier.pop();
+
+        //if(v==goal) break; //comment this if you want to explore the full grid
+
+        if(stopping_distance>0){
+            if(v.distance==stopping_distance) break;
+        }
         //std::cout<<"visiting..."<<v<<'\n';
 
-        for(char u : G.neighbours(v)) {
+        for(Location u : G.neighbors(v)) {
             if(reached.find(u)==reached.end()) {
 
                 came_from[u] = v;
+                u.distance = v.distance+1;
                 frontier.push(u);
                 reached.insert(u);
             }
         }
     }
-
     return came_from;
 }
 
-void find_path(graph G, char source, char v) { //function that finds the (shortest) path from source to v
-    auto parent = BFS(G,source); 
+template<typename Location, typename Graph>
+void find_path(Graph G, Location source, Location v) { //function that finds the (shortest) path from source to v
 
-     char x = v;
+    std::unordered_map<Location,Location> parent = BFS(G,source); 
+
+     Location x = v;
 
     while(x) { //follow parents backwards from v
         std::cout<<x<<'\n';
@@ -57,22 +64,10 @@ void find_path(graph G, char source, char v) { //function that finds the (shorte
 }
 
 int main() {
-graph example_graph {{
-    {'A', {'B'}},
-    {'B', {'C'}},
-    {'C', {'B', 'D', 'F'}},
-    {'D', {'C', 'E'}},
-    {'E', {'F'}},
-    {'F', {}},
-  }};
- 
-
-//find_path(example_graph, 'A', 'F');
-
-
 
 SquareGrid grid = make_diagram1();
-GridLocation source{5,5};
-GridLocation goal{10,10};
-draw_grid(grid,nullptr, nullptr, nullptr, &source, &goal);
+GridLocation start{7,8};
+GridLocation goal{8,8};
+auto parents = BFS(grid, start,goal, 5);
+draw_grid(grid, nullptr, &parents, nullptr, &start, &goal);
 }
