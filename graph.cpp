@@ -6,13 +6,11 @@
 
 
 
-/*  BFS for the char representation of nodes
-- Returns a map containing parent locations, so that we can print out paths.
-- This implementation also includes an optional stopping distance argument.
-*/
 
+// BFS implementation
+// Returns a table of {location: parent}
 template<typename Location, typename Graph>
-std::unordered_map<Location,Location> BFS( Graph G,  Location source, Location goal, int stopping_distance = -1 ) {  
+std::unordered_map<Location,Location> BFS( Graph G,  Location source, Location goal, bool early_stop = true) {  
 
     std::queue<Location> frontier;
     frontier.push(source);
@@ -29,17 +27,14 @@ std::unordered_map<Location,Location> BFS( Graph G,  Location source, Location g
         Location v = frontier.front();
         frontier.pop();
 
-        //if(v==goal) break; //comment this if you want to explore the full grid
+        if(v==goal && early_stop) break; 
 
-        if(stopping_distance>0){
-            if(v.distance==stopping_distance) break;
-        }
         //std::cout<<"visiting..."<<v<<'\n';
 
         for(Location u : G.neighbors(v)) {
             if(reached.find(u)==reached.end()) {
 
-                came_from[u] = v;
+                came_from[u] = v; //track parent node
                 u.distance = v.distance+1;
                 frontier.push(u);
                 reached.insert(u);
@@ -49,8 +44,9 @@ std::unordered_map<Location,Location> BFS( Graph G,  Location source, Location g
     return came_from;
 }
 
+// Function that finds and prints the (shortest) path from source to v
 template<typename Location, typename Graph>
-void find_path(Graph G, Location source, Location v) { //function that finds the (shortest) path from source to v
+void find_path(Graph G, Location source, Location v) { 
 
     std::unordered_map<Location,Location> parent = BFS(G,source); 
 
@@ -63,11 +59,13 @@ void find_path(Graph G, Location source, Location v) { //function that finds the
     
 }
 
+
+
 int main() {
 
 SquareGrid grid = make_diagram1();
 GridLocation start{7,8};
-GridLocation goal{8,8};
-auto parents = BFS(grid, start,goal, 5);
+GridLocation goal{10,8};
+auto parents = BFS(grid, start,goal, false);
 draw_grid(grid, nullptr, &parents, nullptr, &start, &goal);
 }

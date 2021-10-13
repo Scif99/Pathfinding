@@ -122,7 +122,9 @@ void draw_grid(const Graph& graph,
       GridLocation id {x, y};
       if (graph.walls.find(id) != graph.walls.end()) { // first check if cell is a wall
         std::cout << std::string(field_width, '#');
-      } else if (start && id == *start) { // check for the source node
+      } else if(graph.forests.find(id) !=graph.forests.end() && !distances) { //Check if cell is a forest
+        std::cout << std::string(field_width,'F');
+      }else if (start && id == *start) { // check for the source node
         std::cout << " A ";
       } else if (goal && id == *goal) { //check for destination node
         std::cout << " Z ";
@@ -146,7 +148,8 @@ void draw_grid(const Graph& graph,
   std::cout << std::string(field_width * graph.width, '~') << '\n';
 }
 
-void add_rect(SquareGrid& grid, int x1, int y1, int x2, int y2) { //function to add a rectangular obstacle
+// Use this function to add some obstacles that cannot be passed
+void add_rect(SquareGrid& grid, int x1, int y1, int x2, int y2) { 
   for (int x = x1; x < x2; ++x) {
     for (int y = y1; y < y2; ++y) {
       grid.walls.insert(GridLocation{x, y});
@@ -180,7 +183,7 @@ struct GridWithWeights: SquareGrid {
 
 GridWithWeights make_diagram4() {
   GridWithWeights grid(10, 10);
-  add_rect(grid, 1, 7, 4, 9);
+  add_rect(grid, 1, 7, 4, 9); //add some walls
   typedef GridLocation L;
   grid.forests = std::unordered_set<GridLocation> {
     L{3, 4}, L{3, 5}, L{4, 1}, L{4, 2},
@@ -194,7 +197,24 @@ GridWithWeights make_diagram4() {
   return grid;
 }
 
+template<typename Location>
+std::vector<Location> reconstruct_path(
+   Location start, Location goal,
+   std::unordered_map<Location, Location> came_from
+) {
+  std::vector<Location> path;
+  Location current = goal;
+  while (current != start) {
+    path.push_back(current);
+    current = came_from[current];
+  }
+  path.push_back(start); // optional
+  std::reverse(path.begin(), path.end());
+  return path;
+}
+
+
 inline double heuristic(GridLocation a, GridLocation b) {
-  return std::abs(a.x - b.x) + std::abs(a.y - b.y);
+ return std::abs(a.x - b.x) + std::abs(a.y - b.y);
 }
 
